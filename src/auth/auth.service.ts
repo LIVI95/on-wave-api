@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
-import { UserCreateDto } from 'src/users/dto/user-create.dto';
-import { UserLoginDto } from 'src/users/dto/user-login.dto';
+import { CreateUserDto } from 'src/users/dto/user-create.dto';
+import { LoginUserDto } from 'src/users/dto/user-login.dto';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(userCreateDto: UserCreateDto) {
+  async register(userCreateDto: CreateUserDto) {
     const candidate = await this.usersService.getByEmail(userCreateDto.email);
     if (candidate) {
       throw new HttpException('User exists', HttpStatus.BAD_REQUEST);
@@ -35,7 +35,7 @@ export class AuthService {
     };
   }
 
-  async login(userLoginDto: UserLoginDto) {
+  async login(userLoginDto: LoginUserDto) {
     const candidate = await this.usersService.getByEmail(userLoginDto.email);
     if (!candidate) {
       throw new HttpException('Invalid login data', HttpStatus.BAD_REQUEST);
