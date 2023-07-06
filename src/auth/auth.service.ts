@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
@@ -11,6 +12,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async register(userCreateDto: CreateUserDto) {
@@ -60,8 +62,14 @@ export class AuthService {
         isActivated: candidate.isActivated,
         isBanned: candidate.isBanned,
       },
-      token,
+      cookie: `AccessToken=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
+        'JWT_EXPIRATION_TIME',
+      )}`,
     };
+  }
+
+  async logout() {
+    return 'Authentication=; HttpOnly; Path=/; Max-Age=0';
   }
 
   private async hashPassword(password: string): Promise<string> {
