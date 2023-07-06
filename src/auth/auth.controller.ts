@@ -1,8 +1,8 @@
-import { Body, Controller, HttpCode, Post, UsePipes } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dto/user-create.dto';
 import { LoginUserDto } from 'src/users/dto/user-login.dto';
-import { TrimPipe } from 'src/pipes/trim.pipe';
+import { Response } from 'express';
 
 @Controller('api/auth')
 export class AuthController {
@@ -10,8 +10,12 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  async login(@Body() userLoginDto: LoginUserDto) {
-    return await this.authService.login(userLoginDto);
+  async login(@Body() userLoginDto: LoginUserDto, @Res() res: Response) {
+    const { data, token } = await this.authService.login(userLoginDto);
+
+    res.cookie('Access-token', token);
+
+    res.send(data);
   }
 
   @Post('register')

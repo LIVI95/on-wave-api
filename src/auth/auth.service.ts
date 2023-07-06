@@ -75,4 +75,6 @@ export class AuthService {
   ): Promise<boolean> {
     return await bcrypt.compare(password, hash);
   }
+
+  async getCookieWithJwtToken(userId: number) {}
 }
