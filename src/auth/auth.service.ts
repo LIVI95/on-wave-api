@@ -50,8 +50,17 @@ export class AuthService {
       throw new HttpException('Invalid login data', HttpStatus.BAD_REQUEST);
     }
 
-    const token = await this.jwtService.signAsync({ id: candidate.id });
-
+    const accessToken = await this.jwtService.signAsync({ id: candidate.id });
+    const refreshToken = await this.jwtService.signAsync(
+      { id: candidate.id },
+      {
+        secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
+        expiresIn: `${this.configService.get(
+          'JWT_REFRESH_TOKEN_EXPIRATION_TIME',
+        )}d`,
+      },
+    );
+    await this.usersService.setHashRefreshToken(refreshToken, candidate.id);
     return {
       data: {
         id: candidate.id,
@@ -62,9 +71,17 @@ export class AuthService {
         isActivated: candidate.isActivated,
         isBanned: candidate.isBanned,
       },
-      cookie: `AccessToken=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
-        'JWT_EXPIRATION_TIME',
-      )}`,
+      cookies: [
+        `AccessToken=${accessToken}; HttpOnly; Path=/; Max-Age=${this.configService.get(
+          'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+        )}`,
+        `RefreshToken=${refreshToken}; HttpOnly; Path=/; Max-Age=${
+          24 *
+          60 *
+          60 *
+          this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')
+        }`,
+      ],
     };
   }
 
@@ -83,6 +100,4 @@ export class AuthService {
   ): Promise<boolean> {
     return await bcrypt.compare(password, hash);
   }
-
-  async getCookieWithJwtToken(userId: number) {}
 }

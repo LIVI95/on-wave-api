@@ -14,9 +14,9 @@ export class AuthController {
     @Body() userLoginDto: LoginUserDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { data, cookie } = await this.authService.login(userLoginDto);
+    const { data, cookies } = await this.authService.login(userLoginDto);
 
-    res.setHeader('Set-Cookie', cookie);
+    res.setHeader('Set-Cookie', cookies);
 
     return data;
   }
